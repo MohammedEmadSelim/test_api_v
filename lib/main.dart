@@ -1,7 +1,117 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+
+  // List students = [
+  //   {
+  //     "name": 'mena',
+  //     "age": 21,
+  //     'college': 'MNF',
+  //     'decription': " this student in 2nd B.C Degree"
+  //   },
+  //   {
+  //     "name": 'mostafa',
+  //     "age": 21,
+  //     'college': 'MNF',
+  //     'decription': " this student in 2nd B.C Degree"
+  //   },
+  //   {
+  //     "name": 'youssef',
+  //     "age": 21,
+  //     'college': 'MNF',
+  //     'decription': " this student in 2nd B.C Degree"
+  //   },
+  //   {
+  //     "name": 'mahmud',
+  //     "age": 21,
+  //     'college': 'MNF',
+  //     'decription': " this student in 2nd B.C Degree"
+  //   },
+  //   {
+  //     "name": 'somia',
+  //     "age": 21,
+  //     'college': 'MNF',
+  //     'decription': " this student in 2nd B.C Degree"
+  //   },
+  //   {
+  //     "name": 'aya',
+  //     "age": 21,
+  //     'college': 'MNF',
+  //     'decription': " this student in 2nd B.C Degree"
+  //   },
+  // ];
+
+  // List<Student> studentsAsObjects = students.map((e) => Student.fromJson(e),).toList();
+
+
+  // for(var student in studentsAsObjects){
+  //   print(student.name);
+  // }
+  calculateBmi(height: 170, weight: 70, unit: 'metric');
+  // runApp(const MyApp());
+}
+
+class Student {
+  final String name;
+
+  final int age;
+
+  final String college;
+
+  final String description;
+
+  Student(
+      {required this.name,
+      required this.age,
+      required this.college,
+      required this.description});
+
+  factory Student.fromJson(Map<String, dynamic> json) {
+    return Student(
+        name: json['name'],
+        age: json['age'],
+        college: json['college'],
+        description: json['decription']);
+  }
+}
+
+Future<void> calculateBmi(
+    {required int height, required int weight, required String unit}) async {
+  // what i should write here
+
+
+
+try{
+  Dio dio = Dio();
+
+  var response = await dio.get(
+      'https://api.apiverve.com/v1/bmicalculator?height=$height&weight=$weight&unit=$unit',
+      options: Options(
+          headers: {"X-API-Key": "65534552-6df3-4b75-aac7-156439eeef58"}));
+  // print('==================================> res = $response');
+
+  var result = BMIResponse.fromJson(jsonDecode(response.data) );
+
+
+  print(result.data.weight);
+
+}catch (e){
+  if(e is TypeError)
+    {
+      print(e.stackTrace);
+    }
+  print(e);
+}
+
+
+
+
+  //===============================
+  return Future.value();
 }
 
 class MyApp extends StatelessWidget {
@@ -39,14 +149,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -121,5 +223,78 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+
+
+
+
+//========================
+class BMIResponse {
+  final String status;
+  final String? error;
+  final BMIData data;
+
+  BMIResponse({
+    required this.status,
+    required this.error,
+    required this.data,
+  });
+
+  factory BMIResponse.fromJson(Map<String, dynamic> json) {
+    return BMIResponse(
+      status: json['status'],
+      error: json['error'],
+      data: BMIData.fromJson(json['data']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'error': error,
+      'data': data.toJson(),
+    };
+  }
+}
+
+class BMIData {
+  final String height;
+  final String weight;
+  final double bmi;
+  final String risk;
+  final String summary;
+  final String recommendation;
+
+  BMIData({
+    required this.height,
+    required this.weight,
+    required this.bmi,
+    required this.risk,
+    required this.summary,
+    required this.recommendation,
+  });
+
+  factory BMIData.fromJson(Map<String, dynamic> json) {
+    return BMIData(
+      height: json['height'],
+      weight: json['weight'],
+      bmi: (json['bmi'] as num).toDouble(),
+      risk: json['risk'],
+      summary: json['summary'],
+      recommendation: json['recommendation'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'height': height,
+      'weight': weight,
+      'bmi': bmi,
+      'risk': risk,
+      'summary': summary,
+      'recommendation': recommendation,
+    };
   }
 }
